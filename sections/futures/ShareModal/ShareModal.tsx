@@ -43,7 +43,7 @@ const ShareModal: FC<ShareModalProps> = ({
 }) => {
 	const { t } = useTranslation();
 	const [imagePathName, setImagePathName] = useState<string>('');
-	const { data, error } = useSWR(() => `/api/handleShare`, fetcher);
+	// const { data, error } = useSWR(() => `/api/handleShare`, fetcher);
 
 	const positionDetails = position?.position ?? null;
 
@@ -67,29 +67,59 @@ const ShareModal: FC<ShareModalProps> = ({
 	const handleShare = () => {
 		let node = document.getElementById('pnl-graphic');
 		if (node) {
-			toPng(node, { cacheBust: true })
-				.then((dataUrl: any) => {
-					axios
-						.post('http://localhost:3000/api/handleShare', {
-							dataUrl: dataUrl,
-						})
-						.then((res: any) => {
-							const url = 'https://v2.beta.kwenta.io';
-							const via = 'kwenta_io';
-							const text = 'this works!';
-							if (data !== undefined) {
-								console.log('data is undefined!');
-							}
-							const twitterURL = `https://twitter.com/intent/tweet?&text=${text}&url=${url}&via=${via}`;
-							window.open(twitterURL, 'twitter');
-						})
-						.catch((err: any) => {
-							console.log(err, 'Error trying to tweet');
-						});
-				})
-				.catch((err: any) => {
-					console.log(err);
+			toPng(node, { cacheBust: true }).then((dataUrl: any) => {
+				console.log('dataUrl: ', dataUrl);
+				// 			axios
+				// 				.post('http://localhost:3000/api/handleShare', {
+				// 					dataUrl: dataUrl,
+				// 				})
+				// 				.then((res: any) => {
+				// 					const url = 'https://v2.beta.kwenta.io';
+				// 					const via = 'kwenta_io';
+				// 					const text = 'this works!';
+				// 					if (data !== undefined) {
+				// 						console.log('data is undefined!');
+				// 					}
+				// 					const twitterURL = `https://twitter.com/intent/tweet?&text=${text}&url=${url}&via=${via}`;
+				// 					window.open(twitterURL, 'twitter');
+				// 				})
+				// 				.catch((err: any) => {
+				// 					console.log(err, 'Error trying to tweet');
+				// 				});
+				// 		})
+				// 		.catch((err: any) => {
+				// 			console.log(err);
+				// 		});
+				// }
+
+				function getBase64Img(base64Img: any) {
+					return base64Img;
+				}
+
+				const base64Img = getBase64Img(dataUrl);
+
+				function base64ToImage(base64Img: any, callback: any) {
+					let img = new Image();
+
+					img.onload = function () {
+						callback(img);
+					};
+
+					img.src = base64Img;
+				}
+
+				base64ToImage(base64Img, function (img: any) {
+					document.getElementById('new-image')?.appendChild(img);
+
+					let log = 'w=' + '50px' + ' h=' + '50px';
+
+					const log_: any = document.getElementById('log');
+
+					if (log_) log_.value = log;
 				});
+			});
+
+			console.log('copied to clipboard!');
 		}
 	};
 
@@ -147,6 +177,8 @@ const ShareModal: FC<ShareModalProps> = ({
 							{t('futures.modals.share.button')}
 						</Button>
 					</ButtonContainer>
+					<div id="new-image" />
+					<div id="log" />
 				</ModalWindow>
 			</BaseModal>
 		</>
